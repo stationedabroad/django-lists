@@ -11,6 +11,11 @@ class NewVisitorTest(unittest.TestCase):
     def tearDown(self):
         self.browser.quit()
 
+    def check_for_text_in_html_table(self, row_text):
+        table = self.browser.find_element_by_id('id_list_table')
+        rows = table.find_elements_by_tag_name('tr')
+        self.assertIn(row_text, [row.text for row in rows])
+
     def test_can_start_a_list_and_retrieve_it_later(self):
         # entering home-page
         self.browser.get('http://127.0.0.1:8003')
@@ -40,11 +45,8 @@ class NewVisitorTest(unittest.TestCase):
         input_box.send_keys(Keys.ENTER)
         time.sleep(1)
 
-        table = self.browser.find_element_by_id('id_list_table')
-        rows = table.find_elements_by_tag_name('tr')
-        table_entries = [row.text for row in rows]
-        self.assertIn('1: Purchase some material', table_entries)
-        self.assertIn('2: Purchase another material', table_entries)
+        self.check_for_text_in_html_table('1: Purchase some material')
+        self.check_for_text_in_html_table('2: Purchase another material')
 
         # There is still a text box inviting her to add another item. She
         # enters "Use peacock feathers to make a fly" (Edith is very methodical)
