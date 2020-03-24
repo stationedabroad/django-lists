@@ -21,8 +21,19 @@ class SMokeTest(TestCase):
 
     def test_save_a_post_request(self):
         response = self.client.post('/', data={'item_text': 'A new list item'})
-        self.assertIn('A new list item', response.content.decode())
-        self.assertTemplateUsed(response, 'home.html')
+        
+        self.assertEqual(Item.objects.count(), 1)
+        new_item = Item.objects.first()
+        self.assertEqual(new_item.text, 'A new list item')
+
+    def test_redirect_after_post(self):
+        response = self.client.post('/', data={'item_text': 'A new list item'})
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response['location'], '/')
+
+    def test_only_saves_items_when_needed(self):
+        self.client.get('/')
+        self.assertEqual(Item.objects.count(), 0)
 
 
 class ItemModelTest(TestCase):
@@ -44,3 +55,13 @@ class ItemModelTest(TestCase):
         self.assertEqual(first_saved_item.text, 'The first list item')
         self.assertEqual(second_saved_item.text, 'Second item in list')
 
+class HomePageTes(TestCase):
+
+    def test_displays_all_list_items(self):
+        Item.objects.create(text='item-1')
+        Item.objects.create(text='item-2')
+
+        response = self.client.get('/')
+        print(response.content.decode())
+        self.assertIn('item-1', response.content.decode())
+        self.assertIn('item-2', response.content.decode())
